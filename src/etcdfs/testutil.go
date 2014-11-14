@@ -35,9 +35,9 @@ func (me testEtcdFsMount) Unmount() {
   os.RemoveAll(me.path)
 }
 
-func NewTestEtcdFsMount() testEtcdFsMount {
+func NewTestEtcdFsMount(r string) testEtcdFsMount {
   t := testEtcdFsMount{}
-  
+
   var err error
   t.path, err = ioutil.TempDir("", "etcd-fs")
 
@@ -45,7 +45,7 @@ func NewTestEtcdFsMount() testEtcdFsMount {
     fmt.Printf("Temdir fail: %v\n", err)
   }
 
-  etcdFs := EtcdFs{FileSystem: pathfs.NewDefaultFileSystem(), EtcdEndpoint: testEtcdEndpoint}
+  etcdFs := EtcdFs{FileSystem: pathfs.NewDefaultFileSystem(), EtcdEndpoint: testEtcdEndpoint, EtcdRootPath: r}
 
   nfs := pathfs.NewPathNodeFs(&etcdFs, nil)
 

@@ -14,6 +14,7 @@ import(
 type EtcdFs struct {
   pathfs.FileSystem
   EtcdEndpoint string
+  EtcdRootPath string
 }
 
 func (me *EtcdFs) NewEtcdClient() *etcd.Client {
@@ -25,7 +26,7 @@ func (me *EtcdFs) Unlink(name string, context *fuse.Context) (code fuse.Status) 
     return fuse.OK
   }
 
-  _, err := me.NewEtcdClient().Delete(name, false)
+  _, err := me.NewEtcdClient().Delete(me.EtcdRootPath + "/" + name, false)
 
   if err != nil {
     log.Println(err)
@@ -40,7 +41,7 @@ func (me *EtcdFs) Rmdir(name string, context *fuse.Context) (code fuse.Status) {
     return fuse.OK
   }
 
-  _, err := me.NewEtcdClient().RawDelete(name, true, true)
+  _, err := me.NewEtcdClient().RawDelete(me.EtcdRootPath + "/" + name, true, true)
 
   if err != nil {
     log.Println(err)
@@ -51,14 +52,14 @@ func (me *EtcdFs) Rmdir(name string, context *fuse.Context) (code fuse.Status) {
 }
 
 func (me *EtcdFs) Create(name string, flags uint32, mode uint32, context *fuse.Context) (file nodefs.File, code fuse.Status) {
-  _, err := me.NewEtcdClient().Set(name, "", 0)
+  _, err := me.NewEtcdClient().Set(me.EtcdRootPath + "/" + name, "", 0)
 
   if err != nil {
     log.Println("Create Error:", err)
     return nil, fuse.ENOENT
   }
 
-  return NewEtcdFile(me.NewEtcdClient(), name), fuse.OK
+  return NewEtcdFile(me.NewEtcdClient(), me.EtcdRootPath, name), fuse.OK
 }
 
 func (me *EtcdFs) Mkdir(name string, mode uint32, context *fuse.Context) fuse.Status {
@@ -66,7 +67,7 @@ func (me *EtcdFs) Mkdir(name string, mode uint32, context *fuse.Context) fuse.St
     return fuse.OK
   }
 
-  _, err := me.NewEtcdClient().CreateDir(name, 0)
+  _, err := me.NewEtcdClient().CreateDir(me.EtcdRootPath + "/" + name, 0)
 
   if err != nil {
     log.Println(err)
@@ -83,7 +84,7 @@ func (me *EtcdFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse.
     }, fuse.OK
   }
 
-  res, err := me.NewEtcdClient().Get(name, false, false)
+  res, err := me.NewEtcdClient().Get(me.EtcdRootPath + "/" + name, false, false)
 
   if err != nil {
     return nil, fuse.ENOENT
@@ -105,7 +106,7 @@ func (me *EtcdFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse.
 }
 
 func (me *EtcdFs) OpenDir(name string, context *fuse.Context) (c []fuse.DirEntry, code fuse.Status) {
-  res, err := me.NewEtcdClient().Get(name, false, false)
+  res, err := me.NewEtcdClient().Get(me.EtcdRootPath + "/" + name, false, false)
 
   if err != nil {
     log.Println("OpenDir Error:", err)
@@ -115,7 +116,7 @@ func (me *EtcdFs) OpenDir(name string, context *fuse.Context) (c []fuse.DirEntry
   entries := []fuse.DirEntry{}
 
   for _, e := range(res.Node.Nodes) {
-    chunks := strings.Split(e.Key, "/")
+    chunks := strings.Split(e.Key[len(me.EtcdRootPath):], "/") //TODO: remove EtcdRootPath from key
     file := chunks[len(chunks)-1]
     if e.Dir {
       entries = append(entries, fuse.DirEntry{Name: file, Mode: fuse.S_IFDIR})
@@ -128,13 +129,12 @@ func (me *EtcdFs) OpenDir(name string, context *fuse.Context) (c []fuse.DirEntry
 }
 
 func (me *EtcdFs) Open(name string, flags uint32, context *fuse.Context) (file nodefs.File, code fuse.Status) {
-  _, err := me.NewEtcdClient().Get(name, false, false)
+  _, err := me.NewEtcdClient().Get(me.EtcdRootPath + "/" + name, false, false)
 
   if err != nil {
     log.Println("Open Error:", err)
     return nil, fuse.ENOENT
   }
 
-  return NewEtcdFile(me.NewEtcdClient(), name), fuse.OK
+  return NewEtcdFile(me.NewEtcdClient(), me.EtcdRootPath, name), fuse.OK
 }
-

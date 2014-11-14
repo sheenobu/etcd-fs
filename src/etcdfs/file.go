@@ -12,12 +12,14 @@ import(
 type etcdFile struct {
   etcdClient *etcd.Client
   path string
+  root string
 }
 
-func NewEtcdFile(client *etcd.Client, path string) nodefs.File {
+func NewEtcdFile(client *etcd.Client, root string, path string) nodefs.File {
   file := new(etcdFile)
   file.etcdClient = client
   file.path = path
+  file.root = root
   return file
 }
 
@@ -32,7 +34,7 @@ func (f *etcdFile) String() string {
 }
 
 func (f *etcdFile) Read(buf []byte, off int64) (fuse.ReadResult, fuse.Status) {
-  res, err := f.etcdClient.Get(f.path, false, false)
+  res, err := f.etcdClient.Get(f.root + "/" + f.path, false, false)
 
   if err != nil {
     log.Println("Error:", err)
@@ -49,7 +51,7 @@ func (f *etcdFile) Read(buf []byte, off int64) (fuse.ReadResult, fuse.Status) {
 }
 
 func (f *etcdFile) Write(data []byte, off int64) (uint32, fuse.Status) {
-  res, err := f.etcdClient.Get(f.path, false, false)
+  res, err := f.etcdClient.Get(f.root + "/" + f.path, false, false)
 
   if err != nil {
     log.Println("Error:", err)
@@ -71,7 +73,7 @@ func (f *etcdFile) Write(data []byte, off int64) (uint32, fuse.Status) {
   newValue.Grow(len(data)+len(rightChunk))
   newValue.Write(data)
   newValue.Write(rightChunk)
-  _, err = f.etcdClient.Set(f.path, newValue.String(), 0)
+  _, err = f.etcdClient.Set(f.root + "/" + f.path, newValue.String(), 0)
 
   if err != nil {
     log.Println("Error:", err)
@@ -89,7 +91,7 @@ func (f *etcdFile) Release() {
 }
 
 func (f *etcdFile) GetAttr(out *fuse.Attr) fuse.Status {
-  res, err := f.etcdClient.Get(f.path, false, false)
+  res, err := f.etcdClient.Get(f.root + "/" + f.path, false, false)
 
   if err != nil {
     log.Println("Error:", err)
@@ -124,4 +126,3 @@ func (f *etcdFile) Chmod(perms uint32) fuse.Status {
 func (f *etcdFile) Allocate(off uint64, size uint64, mode uint32) (code fuse.Status) {
   return fuse.OK
 }
-

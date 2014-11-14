@@ -52,6 +52,7 @@ Basic filesystem operations like:
 + Reading/Writing files
 + Creating/Deleting files
 + Creating/Deleting directories
++ Mount filesystem to some node in etcd, not necessarily the root
 
 What is missing?
 ================
@@ -59,5 +60,4 @@ What is missing?
 + Lots of optimizations
 + Lots of error handling
 + Specifiying more options to etcd connection
-+ Mount filesystem to some node in etcd, not necessarily the root
 + Use watch to get updates from etcd and maybe change file modification time (????)

@@ -15,12 +15,12 @@ func main() {
   }
 
   rootPath := "/"
-  if flag.Arg(2) != nil {
+  if flag.Arg(2) != "" {
     rootPath = flag.Arg(2)
   }
 
   etcdFs := EtcdFs{FileSystem: pathfs.NewDefaultFileSystem(), EtcdEndpoint: flag.Arg(1), EtcdRootPath: rootPath }
-  etcdFs.NewEtcdClient().mkdir(rootPath)
+  etcdFs.NewEtcdClient().SetDir(rootPath,0)
   nfs := pathfs.NewPathNodeFs(&etcdFs, nil)
   server, _, err := nodefs.MountRoot(flag.Arg(0), nfs.Root(), nil)
   if err != nil {

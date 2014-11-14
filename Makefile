@@ -5,6 +5,7 @@ test:
 	go get github.com/franela/goblin
 	go get github.com/coreos/go-etcd/etcd
 	go get github.com/hanwen/go-fuse/fuse
+	go get github.com/landjur/go-uuid
 	go test -v etcdfs
 
 install:
@@ -13,3 +14,4 @@ install:
 
 build:
 	go build etcdfs.go
+	go build etcdfsup.go

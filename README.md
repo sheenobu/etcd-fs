@@ -20,7 +20,8 @@ Etcd-fs uses [go-fuse](https://github.com/hanwen/go-fuse) and [go-etcd](https://
 Every file maps to a key in etcd. Every directory maps to a directory in etcd.
 The content of every file maps to the value of the key in etcd.
 
-When you mount the filesystem, it will mount the root directory of etcd.
+When you mount the filesystem, it will mount the given directory of etcd or the root
+if non is provided.
 
 How do I install it?
 ====================

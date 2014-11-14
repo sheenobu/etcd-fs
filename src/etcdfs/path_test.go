@@ -55,7 +55,7 @@ func TestPathFs(t *testing.T) {
         switch file1.Name() {
           case "a":
             g.Assert(file1.IsDir()).IsFalse()
-            g.Assert(file1.Size()).Equal(1)
+            g.Assert(uint64(file1.Size())).Equal(uint64(1))
             g.Assert(file1.Mode().String()).Equal("-rw-rw-rw-")
           case "b":
             g.Assert(file1.IsDir()).IsTrue()
@@ -66,7 +66,7 @@ func TestPathFs(t *testing.T) {
         switch file2.Name() {
           case "a":
             g.Assert(file2.IsDir()).IsFalse()
-            g.Assert(file2.Size()).Equal(1)
+            g.Assert(uint64(file2.Size())).Equal(uint64(1))
             g.Assert(file2.Mode().String()).Equal("-rw-rw-rw-")
           case "b":
             g.Assert(file2.IsDir()).IsTrue()
